@@ -474,19 +474,21 @@ function setBracketPick(bracket, div, round, idx, name) {
 async function submitBracket() {
   if (!state.playerName.trim()) return;
   const b = state.bracket;
-  let complete = true;
+  const missing = [];
   ['A','B','C','D'].forEach(div => {
-    if (b[div].round1.some(x => !x)) complete = false;
-    if (b[div].quarters.some(x => !x)) complete = false;
-    if (!b[div].semis[0]) complete = false;
-    if (!b[div].final) complete = false;
+    const dName = DIVISIONS[div].name;
+    if (b[div].quarters.some(x => !x)) missing.push(dName + ' Quarters');
+    if (!b[div].semis[0]) missing.push(dName + ' Semis');
   });
-  if (!b.finalFour.semi1 || !b.finalFour.semi2 || !b.finalFour.champion) complete = false;
-  if (!complete) {
-    state.statusMsg = "Fill out every pick before submitting.";
+  if (!b.finalFour.semi1) missing.push('Final Four Semi 1');
+  if (!b.finalFour.semi2) missing.push('Final Four Semi 2');
+  if (!b.finalFour.champion) missing.push('Champion');
+  if (missing.length > 0) {
+    state.statusMsg = "Missing picks: " + missing.join(', ');
     state.statusType = 'error';
     render();
-    setTimeout(() => { state.statusMsg = ''; render(); }, 4000);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => { state.statusMsg = ''; render(); }, 8000);
     return;
   }
   state.saving = true; render();
@@ -497,14 +499,15 @@ async function submitBracket() {
       bracket: b,
       timestamp: new Date().toISOString(),
     });
-    state.statusMsg = "Bracket submitted!";
+    state.statusMsg = "Bracket submitted successfully!";
     state.statusType = 'success';
   } catch (e) {
     state.statusMsg = "Error saving: " + e.message;
     state.statusType = 'error';
   }
   state.saving = false; render();
-  setTimeout(() => { state.statusMsg = ''; render(); }, 3000);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => { state.statusMsg = ''; render(); }, 5000);
 }
 
 async function saveResults() {
