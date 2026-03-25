@@ -224,7 +224,7 @@ const FIREBASE_CONFIG = {
   appId: "1:243963290293:web:5b6fc4fa76dc3fbf65d4fc"
 };
 
-const ADMIN_PASSWORD = "Chitoni$3172"; // Change this!
+const ADMIN_PASSWORD = "Chitoni$3172";
 // ========================================================
 
 const DIVISIONS = {
@@ -364,7 +364,7 @@ let state = {
   view: 'fill',
   playerName: '',
   nameSet: false,
-  bracket: getEmptyBracket(),
+  bracket: getDefaultResults(),
   submissions: {},
   results: getDefaultResults(),
   adminAuthed: false,
@@ -578,7 +578,7 @@ function renderMatchup(chef1, chef2, seed1, seed2, selected, divColor, locked, o
   );
 }
 
-function renderDivision(div, bracket, onPick, locked) {
+function renderDivision(div, bracket, onPick, locked, lockRound1) {
   const d = DIVISIONS[div];
   const r1 = bracket[div].round1;
   const q = bracket[div].quarters;
@@ -606,7 +606,7 @@ function renderDivision(div, bracket, onPick, locked) {
   );
   for (let i = 0; i < 4; i++) {
     const m = d.matchups[i];
-    r1Col.appendChild(renderMatchup(m.name1, m.name2, m.seed1, m.seed2, r1[i], d.color, locked,
+    r1Col.appendChild(renderMatchup(m.name1, m.name2, m.seed1, m.seed2, r1[i], d.color, locked || lockRound1,
       (name) => onPick(div, 'round1', i, name)));
   }
   row.appendChild(r1Col);
@@ -780,7 +780,7 @@ function render() {
       };
 
       ['A','B','C','D'].forEach(div => {
-        container.appendChild(renderDivision(div, state.bracket, onPick, false));
+        container.appendChild(renderDivision(div, state.bracket, onPick, false, true));
       });
       container.appendChild(renderFinalFour(state.bracket, onPick, false));
 
