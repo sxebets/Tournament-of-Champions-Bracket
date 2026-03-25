@@ -494,15 +494,19 @@ async function submitBracket() {
   state.saving = true; render();
   try {
     const key = state.playerName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
-    await db.ref('submissions/' + key).set({
+    const payload = {
       name: state.playerName.trim(),
       bracket: b,
       timestamp: new Date().toISOString(),
-    });
+    };
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out. Please check your connection and try again.')), 15000)
+    );
+    await Promise.race([db.ref('submissions/' + key).set(payload), timeout]);
     state.statusMsg = "Bracket submitted successfully!";
     state.statusType = 'success';
   } catch (e) {
-    state.statusMsg = "Error saving: " + e.message;
+    state.statusMsg = "Error saving: " + (e.message || "Unknown error. Please try again.");
     state.statusType = 'error';
   }
   state.saving = false; render();
