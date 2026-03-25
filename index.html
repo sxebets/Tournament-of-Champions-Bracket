@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOC VII Bracket Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d1a; color: #e0e0e0; font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%);
+    border-bottom: 2px solid #F4A261; padding: 20px 24px; text-align: center;
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 4px;
+    color: #F4A261; margin: 0;
+  }
+  .header .subtitle {
+    color: #666; font-size: 12px; font-family: 'JetBrains Mono', monospace; margin-top: 4px;
+  }
+  .nav { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .nav button {
+    background: transparent; color: #888; border: 1px solid #333;
+    padding: 6px 16px; border-radius: 4px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    transition: all 0.15s;
+  }
+  .nav button.active { background: #F4A261; color: #0d0d1a; border-color: #F4A261; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .status-msg {
+    padding: 10px 16px; border-radius: 6px; margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; text-align: center;
+  }
+  .status-msg.success { background: #2A9D8F20; border: 1px solid #2A9D8F; color: #2A9D8F; }
+  .status-msg.error { background: #E6394620; border: 1px solid #E63946; color: #E63946; }
+  .panel {
+    background: #12121f; border: 1px solid #2a2a4a; border-radius: 8px;
+    padding: 32px; max-width: 400px; margin: 40px auto; text-align: center;
+  }
+  .panel h2 {
+    color: #F4A261; font-family: 'Bebas Neue', sans-serif; font-size: 24px;
+    letter-spacing: 2px; margin-bottom: 16px;
+  }
+  .input-field {
+    background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 4px;
+    padding: 10px 14px; color: #fff; font-size: 14px; width: 100%;
+    font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 12px;
+  }
+  .input-field:focus { border-color: #F4A261; }
+  .btn {
+    border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: #F4A261; color: #0d0d1a; }
+  .btn-submit {
+    background: linear-gradient(135deg, #F4A261, #E63946); color: #fff;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+    padding: 12px 40px; border-radius: 6px;
+  }
+  .btn-save {
+    background: #2A9D8F; color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 2px; padding: 10px 24px; border-radius: 6px;
+  }
+  .btn-delete {
+    background: #E6394630; color: #E63946; border: 1px solid #E6394650;
+    padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .hint { font-size: 11px; color: #555; margin-top: 12px; font-family: 'JetBrains Mono', monospace; }
+
+  /* Division bracket */
+  .div-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    padding-bottom: 8px;
+  }
+  .div-header span {
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px;
+  }
+  .bracket-row {
+    display: flex; gap: 16px; align-items: center; overflow-x: auto; padding-bottom: 8px;
+  }
+  .round-col { display: flex; flex-direction: column; }
+  .round-label {
+    font-size: 9px; color: #666; text-align: center; font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .matchup-label {
+    font-size: 8px; color: #444; text-align: center; font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 2px;
+  }
+  .arrow { color: #333; font-size: 18px; flex-shrink: 0; }
+  .matchup { display: flex; flex-direction: column; gap: 2px; margin: 4px 0; }
+  .chef-slot {
+    padding: 6px 10px; border-radius: 4px; display: flex; align-items: center;
+    gap: 8px; transition: all 0.15s; min-width: 150px; height: 30px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  .chef-slot.empty { background: #1a1a2e; border: 1px solid #2a2a4a; color: #555; font-size: 11px; }
+  .chef-slot.pickable { background: #1a1a2e; border: 1px solid #2a2a4a; color: #aaa; cursor: pointer; }
+  .chef-slot.selected { color: #fff; }
+  .chef-slot.locked { cursor: default; }
+  .chef-seed { font-weight: 700; font-size: 10px; width: 16px; text-align: right; }
+  .chef-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .winner-box {
+    padding: 8px 14px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 700; min-width: 150px; text-align: center;
+  }
+  .winner-box.empty { background: #1a1a2e; border: 2px solid #2a2a4a; color: #555; }
+  .winner-box.filled { color: #fff; }
+  .champion-box {
+    margin-top: 8px; text-align: center; padding: 8px 14px;
+    background: linear-gradient(135deg, #FFD700 0%, #F4A261 100%);
+    border-radius: 8px; color: #0d0d1a; font-weight: 900;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+  }
+  .final-four-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    border-bottom: 2px solid #F4A261; padding-bottom: 8px;
+  }
+  .final-four-header span {
+    color: #F4A261; font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px;
+  }
+  .ff-row { display: flex; gap: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
+
+  /* Standings */
+  .standing-row {
+    background: #12121f; border: 1px solid #2a2a4a; border-radius: 8px;
+    padding: 14px 20px; display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 8px;
+  }
+  .standing-row.first { background: #F4A26115; border-color: #F4A261; }
+  .standing-rank {
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px; width: 40px; text-align: center;
+  }
+  .standing-score {
+    font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: #F4A261;
+  }
+  .standing-correct {
+    font-family: 'JetBrains Mono', monospace; font-size: 16px; color: #2A9D8F;
+  }
+  .stat-label {
+    font-size: 9px; color: #666; font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+  }
+
+  /* Scoring grid */
+  .scoring-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 600px) { .scoring-grid { grid-template-columns: repeat(2, 1fr); } }
+  .scoring-card {
+    background: #1a1a2e; padding: 8px 12px; border-radius: 4px;
+  }
+  .scoring-card .round { color: #ccc; font-weight: 700; font-size: 11px; }
+  .scoring-card .pts { color: #F4A261; }
+  .scoring-card .bonus { color: #666; font-size: 10px; }
+
+  details summary {
+    cursor: pointer; background: #12121f; border: 1px solid #2a2a4a;
+    border-radius: 6px; padding: 10px 16px; color: #ccc;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    margin-bottom: 4px; list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '▸ '; }
+  details[open] summary::before { content: '▾ '; }
+  details > .detail-content {
+    background: #0d0d1a; border: 1px solid #2a2a4a; border-top: none;
+    border-radius: 0 0 6px 6px; padding: 16px;
+  }
+  .sub-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #1a1a2e; padding: 8px 14px; border-radius: 4px; margin-bottom: 4px;
+  }
+  .sub-row span { color: #ccc; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  .setup-box {
+    background: #12121f; border: 1px solid #F4A26150; border-radius: 8px;
+    padding: 24px; margin: 20px auto; max-width: 700px;
+  }
+  .setup-box h3 { color: #F4A261; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; margin-bottom: 12px; }
+  .setup-box p, .setup-box li { color: #aaa; font-size: 13px; line-height: 1.7; font-family: 'JetBrains Mono', monospace; }
+  .setup-box code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; color: #F4A261; font-size: 12px; }
+  .setup-box ol { padding-left: 20px; }
+  .setup-box li { margin-bottom: 8px; }
+  .config-input {
+    background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 4px;
+    padding: 8px 12px; color: #fff; font-size: 12px; width: 100%;
+    font-family: 'JetBrains Mono', monospace; outline: none; margin-bottom: 8px;
+  }
+  .config-input:focus { border-color: #F4A261; }
+
+  .quarters-gap { gap: 40px; justify-content: center; }
+  .loading-screen {
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+    color: #F4A261; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+// ==================== CONFIGURATION ====================
+// INSTRUCTIONS: Replace this with your Firebase config from the Firebase Console.
+// Go to: https://console.firebase.google.com → Your Project → Project Settings → General
+// Scroll to "Your apps" → Web app → Config
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCzSor0AE_KFgtjI18PNsEHKQCgml9kQvw",
+  authDomain: "matt-s-toc-bracket-challenge.firebaseapp.com",
+  databaseURL: "https://matt-s-toc-bracket-challenge-default-rtdb.firebaseio.com",
+  projectId: "matt-s-toc-bracket-challenge",
+  storageBucket: "matt-s-toc-bracket-challenge.firebasestorage.app",
+  messagingSenderId: "243963290293",
+  appId: "1:243963290293:web:5b6fc4fa76dc3fbf65d4fc"
+};
+
+const ADMIN_PASSWORD = "Chitoni$3172"; // Change this!
+// ========================================================
+
+const DIVISIONS = {
+  A: {
+    name: "Division A", color: "#E63946",
+    matchups: [
+      { seed1: 1, name1: "Ming Tsai", seed2: 8, name2: "Aarti Sequeira" },
+      { seed1: 2, name1: "Jet Tila", seed2: 7, name2: "Ashleigh Shanti" },
+      { seed1: 3, name1: "Tobias Dorzon", seed2: 6, name2: "Claudette Zepeda" },
+      { seed1: 4, name1: "Jonathon Sawyer", seed2: 5, name2: "Karen Akunowicz" },
+    ],
+  },
+  B: {
+    name: "Division B", color: "#457B9D",
+    matchups: [
+      { seed1: 1, name1: "Lorena Garcia", seed2: 8, name2: "Katsuji Tanabe" },
+      { seed1: 2, name1: "Britt Rescigno", seed2: 7, name2: "Giuseppe Tentori" },
+      { seed1: 3, name1: "Kevin Lee", seed2: 6, name2: "Adam Greenberg" },
+      { seed1: 4, name1: "Nini Nguyen", seed2: 5, name2: "Joe Sasto" },
+    ],
+  },
+  C: {
+    name: "Division C", color: "#2A9D8F",
+    matchups: [
+      { seed1: 1, name1: "Jonathan Waxman", seed2: 8, name2: "Viet Pham" },
+      { seed1: 2, name1: "Sara Bradley", seed2: 7, name2: "Dan Jacobs" },
+      { seed1: 3, name1: "Bryan Voltaggio", seed2: 6, name2: "Carlos Anthony" },
+      { seed1: 4, name1: "Dale Talde", seed2: 5, name2: "Shirley Chung" },
+    ],
+  },
+  D: {
+    name: "Division D", color: "#E9C46A",
+    matchups: [
+      { seed1: 1, name1: "Aaron Sanchez", seed2: 8, name2: "Kenny Gilbert" },
+      { seed1: 2, name1: "Lee Anne Wong", seed2: 7, name2: "Stephanie Izard" },
+      { seed1: 3, name1: "Marcel Vigneron", seed2: 6, name2: "David Viana" },
+      { seed1: 4, name1: "Kaleena Bliss", seed2: 5, name2: "Adam Sobel" },
+    ],
+  },
+};
+
+const SCORING = {
+  round1: { base: 2, upsetBonus: 1 },
+  quarterfinals: { base: 4, upsetBonus: 2 },
+  semifinals: { base: 8, upsetBonus: 3 },
+  divFinal: { base: 16, upsetBonus: 5 },
+  finalSemi: { base: 24, upsetBonus: 8 },
+  championship: { base: 40, upsetBonus: 12 },
+};
+
+const Q_PAIRINGS = [[0, 3], [1, 2]]; // 1/8 vs 4/5, 2/7 vs 3/6
+
+function getEmptyBracket() {
+  const b = {};
+  ['A','B','C','D'].forEach(div => {
+    b[div] = { round1: [null,null,null,null], quarters: [null,null], semis: [null], final: null };
+  });
+  b.finalFour = { semi1: null, semi2: null, champion: null };
+  return b;
+}
+
+function getDefaultResults() {
+  const b = getEmptyBracket();
+  b.A.round1 = ["Aarti Sequeira", "Jet Tila", "Claudette Zepeda", "Jonathon Sawyer"];
+  b.B.round1 = ["Lorena Garcia", "Britt Rescigno", "Kevin Lee", "Joe Sasto"];
+  b.C.round1 = ["Viet Pham", "Dan Jacobs", "Bryan Voltaggio", "Shirley Chung"];
+  b.D.round1 = ["Kenny Gilbert", "Stephanie Izard", "Marcel Vigneron", "Kaleena Bliss"];
+  return b;
+}
+
+function getSeedForChef(chef, div) {
+  for (const m of DIVISIONS[div].matchups) {
+    if (m.name1 === chef) return m.seed1;
+    if (m.name2 === chef) return m.seed2;
+  }
+  return null;
+}
+
+function calculateScore(playerBracket, results) {
+  let score = 0, correct = 0, total = 0;
+  ['A','B','C','D'].forEach(div => {
+    const pb = playerBracket[div], rb = results[div];
+    if (!pb || !rb) return;
+    // Round 1
+    pb.round1.forEach((pick, i) => {
+      if (rb.round1[i] !== null && rb.round1[i] !== undefined) {
+        total++;
+        if (pick === rb.round1[i]) {
+          correct++; score += SCORING.round1.base;
+          const m = DIVISIONS[div].matchups[i];
+          const ws = pick === m.name1 ? m.seed1 : m.seed2;
+          const ls = pick === m.name1 ? m.seed2 : m.seed1;
+          if (ws > ls) score += SCORING.round1.upsetBonus;
+        }
+      }
+    });
+    // Quarters
+    pb.quarters.forEach((pick, i) => {
+      if (rb.quarters[i] !== null && rb.quarters[i] !== undefined) {
+        total++;
+        if (pick === rb.quarters[i]) {
+          correct++; score += SCORING.quarterfinals.base;
+          const s = getSeedForChef(pick, div);
+          if (s && s > 3) score += SCORING.quarterfinals.upsetBonus;
+        }
+      }
+    });
+    // Semis
+    if (rb.semis[0] !== null && rb.semis[0] !== undefined) {
+      total++;
+      if (pb.semis[0] === rb.semis[0]) {
+        correct++; score += SCORING.semifinals.base;
+        const s = getSeedForChef(pb.semis[0], div);
+        if (s && s > 2) score += SCORING.semifinals.upsetBonus;
+      }
+    }
+    // Div Final
+    if (rb.final !== null && rb.final !== undefined) {
+      total++;
+      if (pb.final === rb.final) {
+        correct++; score += SCORING.divFinal.base;
+        const s = getSeedForChef(pb.final, div);
+        if (s && s > 1) score += SCORING.divFinal.upsetBonus;
+      }
+    }
+  });
+  // Final Four
+  const pff = playerBracket.finalFour || {}, rff = results.finalFour || {};
+  if (rff.semi1) { total++; if (pff.semi1 === rff.semi1) { correct++; score += SCORING.finalSemi.base; } }
+  if (rff.semi2) { total++; if (pff.semi2 === rff.semi2) { correct++; score += SCORING.finalSemi.base; } }
+  if (rff.champion) { total++; if (pff.champion === rff.champion) { correct++; score += SCORING.championship.base; } }
+  return { score, correct, total };
+}
+
+// ==================== APP STATE ====================
+let state = {
+  view: 'fill',
+  playerName: '',
+  nameSet: false,
+  bracket: getEmptyBracket(),
+  submissions: {},
+  results: getDefaultResults(),
+  adminAuthed: false,
+  adminKey: '',
+  saving: false,
+  statusMsg: '',
+  statusType: 'success',
+  firebaseReady: false,
+  firebaseError: null,
+};
+
+let db = null;
+
+function initFirebase() {
+  try {
+    if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
+      state.firebaseError = "setup";
+      render();
+      return;
+    }
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.database();
+
+    // Listen for submissions
+    db.ref('submissions').on('value', snap => {
+      state.submissions = snap.val() || {};
+      render();
+    });
+
+    // Listen for results
+    db.ref('results').on('value', snap => {
+      const val = snap.val();
+      if (val) state.results = val;
+      render();
+    });
+
+    state.firebaseReady = true;
+    render();
+  } catch (e) {
+    state.firebaseError = e.message;
+    render();
+  }
+}
+
+// ==================== BRACKET LOGIC ====================
+function setBracketPick(bracket, div, round, idx, name) {
+  const next = JSON.parse(JSON.stringify(bracket));
+
+  if (div === 'finalFour') {
+    if (round === 'semi1') {
+      const old = next.finalFour.semi1;
+      next.finalFour.semi1 = name;
+      if (next.finalFour.champion === old && old !== name) next.finalFour.champion = null;
+    } else if (round === 'semi2') {
+      const old = next.finalFour.semi2;
+      next.finalFour.semi2 = name;
+      if (next.finalFour.champion === old && old !== name) next.finalFour.champion = null;
+    } else if (round === 'champion') {
+      next.finalFour.champion = name;
+    }
+    return next;
+  }
+
+  if (round === 'round1') {
+    next[div].round1[idx] = name;
+    Q_PAIRINGS.forEach((pair, qIdx) => {
+      const oldQ = next[div].quarters[qIdx];
+      const feeders = [next[div].round1[pair[0]], next[div].round1[pair[1]]];
+      if (oldQ && !feeders.includes(oldQ)) next[div].quarters[qIdx] = null;
+    });
+    const sOld = next[div].semis[0];
+    if (sOld && ![next[div].quarters[0], next[div].quarters[1]].includes(sOld)) {
+      next[div].semis[0] = null;
+      if (next[div].final === sOld) {
+        next[div].final = null;
+        if (next.finalFour.semi1 === sOld) next.finalFour.semi1 = null;
+        if (next.finalFour.semi2 === sOld) next.finalFour.semi2 = null;
+        if (next.finalFour.champion === sOld) next.finalFour.champion = null;
+      }
+    }
+  } else if (round === 'quarters') {
+    next[div].quarters[idx] = name;
+    const sOld = next[div].semis[0];
+    if (sOld && ![next[div].quarters[0], next[div].quarters[1]].includes(sOld)) {
+      next[div].semis[0] = null;
+      if (next[div].final === sOld) {
+        next[div].final = null;
+        if (next.finalFour.semi1 === sOld) next.finalFour.semi1 = null;
+        if (next.finalFour.semi2 === sOld) next.finalFour.semi2 = null;
+        if (next.finalFour.champion === sOld) next.finalFour.champion = null;
+      }
+    }
+  } else if (round === 'semis') {
+    const oldFinal = next[div].final;
+    next[div].semis[0] = name;
+    next[div].final = name;
+    if (oldFinal !== name) {
+      if (next.finalFour.semi1 === oldFinal) next.finalFour.semi1 = null;
+      if (next.finalFour.semi2 === oldFinal) next.finalFour.semi2 = null;
+      if (next.finalFour.champion === oldFinal) next.finalFour.champion = null;
+    }
+  }
+  return next;
+}
+
+// ==================== FIREBASE OPS ====================
+async function submitBracket() {
+  if (!state.playerName.trim()) return;
+  const b = state.bracket;
+  let complete = true;
+  ['A','B','C','D'].forEach(div => {
+    if (b[div].round1.some(x => !x)) complete = false;
+    if (b[div].quarters.some(x => !x)) complete = false;
+    if (!b[div].semis[0]) complete = false;
+    if (!b[div].final) complete = false;
+  });
+  if (!b.finalFour.semi1 || !b.finalFour.semi2 || !b.finalFour.champion) complete = false;
+  if (!complete) {
+    state.statusMsg = "Fill out every pick before submitting.";
+    state.statusType = 'error';
+    render();
+    setTimeout(() => { state.statusMsg = ''; render(); }, 4000);
+    return;
+  }
+  state.saving = true; render();
+  try {
+    const key = state.playerName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+    await db.ref('submissions/' + key).set({
+      name: state.playerName.trim(),
+      bracket: b,
+      timestamp: new Date().toISOString(),
+    });
+    state.statusMsg = "Bracket submitted!";
+    state.statusType = 'success';
+  } catch (e) {
+    state.statusMsg = "Error saving: " + e.message;
+    state.statusType = 'error';
+  }
+  state.saving = false; render();
+  setTimeout(() => { state.statusMsg = ''; render(); }, 3000);
+}
+
+async function saveResults() {
+  state.saving = true; render();
+  try {
+    await db.ref('results').set(state.results);
+    state.statusMsg = "Results saved!";
+    state.statusType = 'success';
+  } catch (e) {
+    state.statusMsg = "Error: " + e.message;
+    state.statusType = 'error';
+  }
+  state.saving = false; render();
+  setTimeout(() => { state.statusMsg = ''; render(); }, 3000);
+}
+
+async function deleteSubmission(key) {
+  await db.ref('submissions/' + key).remove();
+}
+
+// ==================== RENDERING ====================
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  if (attrs) {
+    Object.entries(attrs).forEach(([k, v]) => {
+      if (k === 'style' && typeof v === 'object') {
+        Object.assign(el.style, v);
+      } else if (k.startsWith('on')) {
+        el.addEventListener(k.slice(2).toLowerCase(), v);
+      } else if (k === 'className') {
+        el.className = v;
+      } else if (k === 'innerHTML') {
+        el.innerHTML = v;
+      } else {
+        el.setAttribute(k, v);
+      }
+    });
+  }
+  children.flat(Infinity).forEach(c => {
+    if (c == null || c === false) return;
+    if (typeof c === 'string' || typeof c === 'number') el.appendChild(document.createTextNode(c));
+    else if (c instanceof Node) el.appendChild(c);
+  });
+  return el;
+}
+
+function renderChefSlot(name, seed, isSelected, divColor, locked, onClick) {
+  if (!name) {
+    return h('div', { className: 'chef-slot empty' }, 'TBD');
+  }
+  const slot = h('div', {
+    className: `chef-slot ${locked ? 'locked' : 'pickable'} ${isSelected ? 'selected' : ''}`,
+    style: {
+      background: isSelected ? divColor + '30' : '#1a1a2e',
+      border: `1px solid ${isSelected ? divColor : '#2a2a4a'}`,
+    },
+    onClick: () => { if (!locked) onClick(name); },
+    onMouseenter: function() { if (!locked && !isSelected) this.style.borderColor = divColor + '88'; },
+    onMouseleave: function() { if (!isSelected) this.style.borderColor = isSelected ? divColor : '#2a2a4a'; },
+  },
+    h('span', { className: 'chef-seed', style: { color: divColor } }, seed ? `#${seed}` : ''),
+    h('span', { className: 'chef-name' }, name)
+  );
+  return slot;
+}
+
+function renderMatchup(chef1, chef2, seed1, seed2, selected, divColor, locked, onSelect) {
+  return h('div', { className: 'matchup' },
+    renderChefSlot(chef1, seed1, selected === chef1, divColor, locked, onSelect),
+    renderChefSlot(chef2, seed2, selected === chef2, divColor, locked, onSelect),
+  );
+}
+
+function renderDivision(div, bracket, onPick, locked) {
+  const d = DIVISIONS[div];
+  const r1 = bracket[div].round1;
+  const q = bracket[div].quarters;
+  const s = bracket[div].semis;
+  const f = bracket[div].final;
+
+  const getQPair = (idx) => {
+    const [i1, i2] = Q_PAIRINGS[idx];
+    return { c1: r1[i1], c2: r1[i2], s1: r1[i1] ? getSeedForChef(r1[i1], div) : null, s2: r1[i2] ? getSeedForChef(r1[i2], div) : null };
+  };
+
+  const container = h('div', { style: { marginBottom: '24px' } });
+
+  // Header
+  const header = h('div', { className: 'div-header', style: { borderBottom: `2px solid ${d.color}` } },
+    h('span', { style: { color: d.color } }, d.name)
+  );
+  container.appendChild(header);
+
+  const row = h('div', { className: 'bracket-row' });
+
+  // Round 1
+  const r1Col = h('div', { className: 'round-col', style: { gap: '12px' } },
+    h('div', { className: 'round-label' }, 'Round 1')
+  );
+  for (let i = 0; i < 4; i++) {
+    const m = d.matchups[i];
+    r1Col.appendChild(renderMatchup(m.name1, m.name2, m.seed1, m.seed2, r1[i], d.color, locked,
+      (name) => onPick(div, 'round1', i, name)));
+  }
+  row.appendChild(r1Col);
+  row.appendChild(h('div', { className: 'arrow' }, '→'));
+
+  // Quarters
+  const qCol = h('div', { className: 'round-col quarters-gap', style: { gap: '40px', justifyContent: 'center' } },
+    h('div', { className: 'round-label' }, 'Quarters')
+  );
+  for (let i = 0; i < 2; i++) {
+    const p = getQPair(i);
+    const label = i === 0 ? '1/8 vs 4/5' : '2/7 vs 3/6';
+    const wrap = h('div', {},
+      h('div', { className: 'matchup-label' }, label),
+      renderMatchup(p.c1, p.c2, p.s1, p.s2, q[i], d.color, locked,
+        (name) => onPick(div, 'quarters', i, name))
+    );
+    qCol.appendChild(wrap);
+  }
+  row.appendChild(qCol);
+  row.appendChild(h('div', { className: 'arrow' }, '→'));
+
+  // Semis
+  const sCol = h('div', { className: 'round-col', style: { justifyContent: 'center' } },
+    h('div', { className: 'round-label' }, 'Semis'),
+    renderMatchup(q[0], q[1],
+      q[0] ? getSeedForChef(q[0], div) : null,
+      q[1] ? getSeedForChef(q[1], div) : null,
+      s[0], d.color, locked,
+      (name) => onPick(div, 'semis', 0, name))
+  );
+  row.appendChild(sCol);
+  row.appendChild(h('div', { className: 'arrow' }, '→'));
+
+  // Winner
+  const wCol = h('div', { className: 'round-col', style: { justifyContent: 'center' } },
+    h('div', { className: 'round-label' }, 'Winner'),
+    h('div', {
+      className: `winner-box ${f ? 'filled' : 'empty'}`,
+      style: f ? { background: d.color + '25', border: `2px solid ${d.color}` } : {},
+    }, f || 'TBD')
+  );
+  row.appendChild(wCol);
+
+  container.appendChild(row);
+  return container;
+}
+
+function renderFinalFour(bracket, onPick, locked) {
+  const dw = { A: bracket.A.final, B: bracket.B.final, C: bracket.C.final, D: bracket.D.final };
+  const ff = bracket.finalFour;
+
+  const container = h('div', { style: { marginTop: '16px' } });
+  container.appendChild(h('div', { className: 'final-four-header' },
+    h('span', {}, '🏆 FINAL FOUR')));
+
+  const row = h('div', { className: 'ff-row' });
+
+  // Semi 1: A vs D
+  row.appendChild(h('div', {},
+    h('div', { className: 'round-label', style: { marginBottom: '4px' } }, 'Semi 1 (A vs D)'),
+    renderMatchup(dw.A, dw.D, null, null, ff.semi1, '#F4A261', locked,
+      (name) => onPick('finalFour', 'semi1', 0, name))
+  ));
+
+  row.appendChild(h('div', { className: 'arrow' }, '→'));
+
+  // Championship
+  const champDiv = h('div', {},
+    h('div', { className: 'round-label', style: { marginBottom: '4px' } }, 'Championship'),
+    renderMatchup(ff.semi1, ff.semi2, null, null, ff.champion, '#FFD700', locked,
+      (name) => onPick('finalFour', 'champion', 0, name))
+  );
+  if (ff.champion) {
+    champDiv.appendChild(h('div', { className: 'champion-box' }, '🏆 ' + ff.champion));
+  }
+  row.appendChild(champDiv);
+
+  row.appendChild(h('div', { className: 'arrow' }, '←'));
+
+  // Semi 2: B vs C
+  row.appendChild(h('div', {},
+    h('div', { className: 'round-label', style: { marginBottom: '4px' } }, 'Semi 2 (B vs C)'),
+    renderMatchup(dw.B, dw.C, null, null, ff.semi2, '#F4A261', locked,
+      (name) => onPick('finalFour', 'semi2', 0, name))
+  ));
+
+  container.appendChild(row);
+  return container;
+}
+
+function getStandings() {
+  const subs = state.submissions;
+  return Object.entries(subs).map(([key, s]) => ({
+    key, ...s, ...calculateScore(s.bracket, state.results)
+  })).sort((a, b) => b.score - a.score || b.correct - a.correct);
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  // Header
+  const header = h('div', { className: 'header' },
+    h('h1', {}, '🔥 TOURNAMENT OF CHAMPIONS VII 🔥'),
+    h('div', { className: 'subtitle' }, 'Food Network • Bracket Challenge'),
+  );
+  const nav = h('div', { className: 'nav' });
+  ['fill', 'standings', 'scoring', 'admin'].forEach(v => {
+    const labels = { fill: 'Fill Bracket', standings: 'Standings', scoring: 'Scoring', admin: 'Admin' };
+    const btn = h('button', {
+      className: state.view === v ? 'active' : '',
+      onClick: () => { state.view = v; render(); },
+    }, labels[v]);
+    nav.appendChild(btn);
+  });
+  header.appendChild(nav);
+  app.appendChild(header);
+
+  const container = h('div', { className: 'container' });
+
+  // Firebase setup needed
+  if (state.firebaseError === 'setup') {
+    container.appendChild(h('div', { className: 'setup-box' },
+      h('h3', {}, 'Firebase Setup Required'),
+      h('p', {}, 'Edit the FIREBASE_CONFIG object at the top of this HTML file with your Firebase project credentials.'),
+      h('ol', {},
+        h('li', {}, 'Go to console.firebase.google.com and create a new project (free)'),
+        h('li', {}, 'In Build → Realtime Database, create a database and set rules to allow read/write'),
+        h('li', {}, 'In Project Settings → General → Your Apps, add a web app'),
+        h('li', {}, 'Copy the config object and paste it into this file'),
+      ),
+    ));
+    app.appendChild(container);
+    return;
+  }
+
+  // Status message
+  if (state.statusMsg) {
+    container.appendChild(h('div', { className: `status-msg ${state.statusType}` }, state.statusMsg));
+  }
+
+  // ===== FILL BRACKET =====
+  if (state.view === 'fill') {
+    if (!state.nameSet) {
+      const panel = h('div', { className: 'panel' },
+        h('h2', {}, 'Enter Your Name'),
+        h('input', {
+          className: 'input-field', type: 'text', placeholder: 'Your name...',
+          value: state.playerName,
+          onInput: (e) => { state.playerName = e.target.value; },
+          onKeydown: (e) => { if (e.key === 'Enter' && state.playerName.trim()) { state.nameSet = true; render(); } },
+        }),
+        h('button', { className: 'btn btn-primary', onClick: () => {
+          if (state.playerName.trim()) { state.nameSet = true; render(); }
+        }}, 'Start Picking →'),
+      );
+      container.appendChild(panel);
+    } else {
+      const topRow = h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' } },
+        h('div', { style: { color: '#888', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' } },
+          'Picking as: ', h('span', { style: { color: '#F4A261', fontWeight: '700' } }, state.playerName)),
+        h('button', { className: 'btn btn-submit', onClick: submitBracket, disabled: state.saving },
+          state.saving ? 'Saving...' : 'Submit Bracket'),
+      );
+      container.appendChild(topRow);
+
+      const onPick = (div, round, idx, name) => {
+        state.bracket = setBracketPick(state.bracket, div, round, idx, name);
+        render();
+      };
+
+      ['A','B','C','D'].forEach(div => {
+        container.appendChild(renderDivision(div, state.bracket, onPick, false));
+      });
+      container.appendChild(renderFinalFour(state.bracket, onPick, false));
+
+      container.appendChild(h('div', { style: { textAlign: 'center', marginTop: '24px', marginBottom: '40px' } },
+        h('button', { className: 'btn btn-submit', onClick: submitBracket, disabled: state.saving },
+          state.saving ? 'Saving...' : '🔥 Submit Bracket 🔥')
+      ));
+    }
+  }
+
+  // ===== STANDINGS =====
+  if (state.view === 'standings') {
+    container.appendChild(h('div', { style: { color: '#F4A261', fontFamily: "'Bebas Neue', sans-serif", fontSize: '28px', letterSpacing: '3px', marginBottom: '16px' } }, 'Leaderboard'));
+
+    const standings = getStandings();
+    if (standings.length === 0) {
+      container.appendChild(h('div', {
+        style: { background: '#12121f', border: '1px solid #2a2a4a', borderRadius: '8px', padding: '40px', textAlign: 'center', color: '#666', fontFamily: "'JetBrains Mono', monospace" }
+      }, 'No brackets submitted yet.'));
+    } else {
+      standings.forEach((s, i) => {
+        const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+        const row = h('div', { className: `standing-row ${i === 0 ? 'first' : ''}` },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px' } },
+            h('span', { className: 'standing-rank', style: { color: rankColors[i] || '#555' } }, String(i + 1)),
+            h('div', {},
+              h('div', { style: { fontWeight: '700', fontSize: '16px', color: '#fff' } }, s.name),
+              h('div', { style: { fontSize: '11px', color: '#666', fontFamily: "'JetBrains Mono', monospace" } },
+                'Submitted ' + new Date(s.timestamp).toLocaleDateString())
+            ),
+          ),
+          h('div', { style: { display: 'flex', gap: '24px', alignItems: 'center' } },
+            h('div', { style: { textAlign: 'center' } },
+              h('div', { className: 'standing-score' }, String(s.score)),
+              h('div', { className: 'stat-label' }, 'Points'),
+            ),
+            h('div', { style: { textAlign: 'center' } },
+              h('div', { className: 'standing-correct' }, `${s.correct}/${s.total}`),
+              h('div', { className: 'stat-label' }, 'Correct'),
+            ),
+          ),
+        );
+        container.appendChild(row);
+      });
+
+      // Expandable brackets
+      container.appendChild(h('div', { style: { color: '#F4A261', fontFamily: "'Bebas Neue', sans-serif", fontSize: '22px', letterSpacing: '2px', marginTop: '32px', marginBottom: '12px' } }, 'View Submitted Brackets'));
+      standings.forEach(s => {
+        const details = h('details', { style: { marginBottom: '8px' } });
+        details.appendChild(h('summary', {}, `${s.name}'s Bracket (${s.score} pts)`));
+        const content = h('div', { className: 'detail-content' });
+        ['A','B','C','D'].forEach(div => {
+          content.appendChild(renderDivision(div, s.bracket, () => {}, true));
+        });
+        content.appendChild(renderFinalFour(s.bracket, () => {}, true));
+        details.appendChild(content);
+        container.appendChild(details);
+      });
+    }
+  }
+
+  // ===== SCORING =====
+  if (state.view === 'scoring') {
+    const box = h('div', { style: { background: '#12121f', border: '1px solid #2a2a4a', borderRadius: '8px', padding: '20px', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#aaa' } },
+      h('div', { style: { color: '#F4A261', fontFamily: "'Bebas Neue', sans-serif", fontSize: '20px', letterSpacing: '2px', marginBottom: '12px' } }, 'Scoring System'),
+    );
+    const grid = h('div', { className: 'scoring-grid' });
+    [
+      { round: 'Round 1', base: 2, upset: 1 },
+      { round: 'Quarterfinals', base: 4, upset: 2 },
+      { round: 'Semifinals', base: 8, upset: 3 },
+      { round: 'Division Final', base: 16, upset: 5 },
+      { round: 'Final Four Semis', base: 24, upset: 8 },
+      { round: 'Championship', base: 40, upset: 12 },
+    ].forEach(r => {
+      grid.appendChild(h('div', { className: 'scoring-card' },
+        h('div', { className: 'round' }, r.round),
+        h('div', { className: 'pts' }, r.base + ' pts'),
+        h('div', { className: 'bonus' }, '+' + r.upset + ' upset bonus'),
+      ));
+    });
+    box.appendChild(grid);
+    box.appendChild(h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#777', lineHeight: '1.6' } },
+      h('strong', { style: { color: '#ccc' } }, 'Upset Bonus: '),
+      'Awarded when a higher-seeded chef (lower number = higher seed) loses and you correctly picked the lower seed to win.'
+    ));
+    container.appendChild(box);
+  }
+
+  // ===== ADMIN =====
+  if (state.view === 'admin') {
+    if (!state.adminAuthed) {
+      const panel = h('div', { className: 'panel' },
+        h('h2', {}, 'Admin Access'),
+        h('input', {
+          className: 'input-field', type: 'password', placeholder: 'Admin password...',
+          onInput: (e) => { state.adminKey = e.target.value; },
+          onKeydown: (e) => { if (e.key === 'Enter' && state.adminKey === ADMIN_PASSWORD) { state.adminAuthed = true; render(); } },
+        }),
+        h('button', { className: 'btn btn-primary', onClick: () => {
+          if (state.adminKey === ADMIN_PASSWORD) { state.adminAuthed = true; render(); }
+        }}, 'Enter'),
+      );
+      container.appendChild(panel);
+    } else {
+      const topRow = h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' } },
+        h('div', { style: { color: '#E63946', fontFamily: "'Bebas Neue', sans-serif", fontSize: '24px', letterSpacing: '2px' } }, 'Enter Actual Results'),
+        h('button', { className: 'btn btn-save', onClick: saveResults, disabled: state.saving },
+          state.saving ? 'Saving...' : 'Save Results'),
+      );
+      container.appendChild(topRow);
+
+      container.appendChild(h('div', {
+        style: { background: '#12121f', border: '1px solid #E6394650', borderRadius: '6px', padding: '12px', marginBottom: '16px', fontSize: '12px', color: '#E63946', fontFamily: "'JetBrains Mono', monospace" }
+      }, 'Click winners as the tournament progresses. Scores update automatically on the standings page.'));
+
+      const onResultPick = (div, round, idx, name) => {
+        state.results = setBracketPick(state.results, div, round, idx, name);
+        render();
+      };
+      ['A','B','C','D'].forEach(div => {
+        container.appendChild(renderDivision(div, state.results, onResultPick, false));
+      });
+      container.appendChild(renderFinalFour(state.results, onResultPick, false));
+
+      container.appendChild(h('div', { style: { textAlign: 'center', marginTop: '24px', marginBottom: '40px' } },
+        h('button', { className: 'btn btn-save', onClick: saveResults, disabled: state.saving },
+          state.saving ? 'Saving...' : 'Save Results')
+      ));
+
+      // Manage submissions
+      const subs = Object.entries(state.submissions);
+      const mgmt = h('div', { style: { marginTop: '20px', borderTop: '1px solid #2a2a4a', paddingTop: '20px' } },
+        h('div', { style: { color: '#888', fontFamily: "'Bebas Neue', sans-serif", fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' } },
+          `Manage Submissions (${subs.length})`)
+      );
+      subs.forEach(([key, s]) => {
+        mgmt.appendChild(h('div', { className: 'sub-row' },
+          h('span', {}, `${s.name} — ${new Date(s.timestamp).toLocaleString()}`),
+          h('button', { className: 'btn-delete', onClick: () => deleteSubmission(key) }, 'Delete'),
+        ));
+      });
+      container.appendChild(mgmt);
+    }
+  }
+
+  app.appendChild(container);
+}
+
+// Boot
+initFirebase();
+</script>
+</body>
+</html>
