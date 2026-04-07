@@ -303,10 +303,29 @@ function getSeedForChef(chef, div) {
   return null;
 }
 
+function ensureBracketShape(b) {
+  // Firebase drops null values and empty arrays — restore expected structure
+  ['A','B','C','D'].forEach(div => {
+    if (!b[div]) b[div] = { round1: [null,null,null,null], quarters: [null,null], semis: [null], final: null };
+    const d = b[div];
+    if (!Array.isArray(d.round1)) d.round1 = [null,null,null,null];
+    while (d.round1.length < 4) d.round1.push(null);
+    if (!Array.isArray(d.quarters)) d.quarters = [null,null];
+    while (d.quarters.length < 2) d.quarters.push(null);
+    if (!Array.isArray(d.semis)) d.semis = [null];
+    while (d.semis.length < 1) d.semis.push(null);
+    if (d.final === undefined) d.final = null;
+  });
+  if (!b.finalFour) b.finalFour = { semi1: null, semi2: null, champion: null };
+  return b;
+}
+
 function calculateScore(playerBracket, results) {
   let score = 0, correct = 0, total = 0;
+  const pb0 = ensureBracketShape(JSON.parse(JSON.stringify(playerBracket)));
+  const rb0 = ensureBracketShape(JSON.parse(JSON.stringify(results)));
   ['A','B','C','D'].forEach(div => {
-    const pb = playerBracket[div], rb = results[div];
+    const pb = pb0[div], rb = rb0[div];
     if (!pb || !rb) return;
     // Round 1
     pb.round1.forEach((pick, i) => {
@@ -390,14 +409,17 @@ function initFirebase() {
 
     // Listen for submissions
     db.ref('submissions').on('value', snap => {
-      state.submissions = snap.val() || {};
+      const subs = snap.val() || {};
+      // Sanitize each submission's bracket shape (Firebase drops nulls)
+      Object.values(subs).forEach(s => { if (s.bracket) ensureBracketShape(s.bracket); });
+      state.submissions = subs;
       render();
     });
 
     // Listen for results
     db.ref('results').on('value', snap => {
       const val = snap.val();
-      if (val) state.results = val;
+      if (val) state.results = ensureBracketShape(val);
       render();
     });
 
